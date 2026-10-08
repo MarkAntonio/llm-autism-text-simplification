@@ -101,6 +101,8 @@ Contribuições são super bem-vindas! Você pode ajudar de diversas formas:
 - Contribuindo com novos documentos originais no diretório data/raw/.
 - Aprimorando os prompts e técnicas de engenharia de IA na pasta src/llm/.
 
+> entre em contato pelo meu email: tech.marcosantos@gmail.com ou pelo linkedin ([https://www.linkedin.com/in/techmarcosantos/](https://www.linkedin.com/in/techmarcosantos/))
+
 ---
 💙 Agradecimentos e Impacto
 
