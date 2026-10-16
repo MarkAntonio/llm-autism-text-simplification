@@ -1,0 +1,7 @@
+A rua Dr. Flores é uma rua da cidade de Porto Alegre?
+Provavelmente, 90% dos gaúchos vai dizer-nos que sim.
+Até os que não moram nos bairros de Porto Alegre.
+Teste para ver se come a última letra
+Teste para ver se pega as reticências...
+Teste para ver se pega exclamações?!
+Teste para ver se trata direito... Mesmo quando o sentenciamento foi errado.

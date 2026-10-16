@@ -1,0 +1,17 @@
+[
+  {
+    "arquivo": "teste.txt",
+    "letras": 90,
+    "silabas": 36,
+    "palavras": 15,
+    "sentencas": 2,
+    "complexas": 2,
+    "flesch": 45.4,
+    "fleschKincaid": 9.7,
+    "gunningFog": 6.2,
+    "ari": 10.9,
+    "cli": 15.6,
+    "gulpease": 69.0,
+    "media": 10.6
+  }
+]

@@ -1,0 +1,2 @@
+arquivo	letras	silabas	palavras	sentencas	complexas	flesch	fleschKincaid	gunningFog	ari	cli	gulpease	media
+teste.txt	90	36	15	2	2	45.4	9.7	6.2	10.9	15.6	69.0	10.6
