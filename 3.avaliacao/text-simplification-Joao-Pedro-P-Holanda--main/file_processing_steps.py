@@ -5,7 +5,7 @@ import pathlib
 from collections.abc import Iterable
 from typing import Literal
 
-import pymupdf4llm
+# import pymupdf4llm
 from contextvars import ContextVar
 from gloe import partial_transformer, transformer
 from uuid import UUID
@@ -45,6 +45,8 @@ def store_results_as_csv(
             data = result.model_dump()
             writer.writerow(data)
 
+    print(f"ARQUIVO SALVO NO CAMINHO -> {store_path}")
+
 
 @transformer
 def read_markdown_file(path: str) -> Document:
@@ -60,17 +62,17 @@ def raise_non_markdown_error(path: str) -> Document:
     raise ValueError(f"Sended non markdown file {path}")
 
 
-@transformer
-def convert_pdf_file_to_markdown_file(path: str) -> pathlib.Path:
-    text = pymupdf4llm.to_markdown(path)
-    as_sys_path = pathlib.Path("./result") / pathlib.Path(path)
+# @transformer
+# def convert_pdf_file_to_markdown_file(path: str) -> pathlib.Path:
+#     text = pymupdf4llm.to_markdown(path)
+#     as_sys_path = pathlib.Path("./result") / pathlib.Path(path)
 
-    as_sys_path.parent.mkdir(parents=True, exist_ok=True)
+#     as_sys_path.parent.mkdir(parents=True, exist_ok=True)
 
-    output = as_sys_path.with_suffix(".md")
-    output.write_bytes(text.encode())
+#     output = as_sys_path.with_suffix(".md")
+#     output.write_bytes(text.encode())
 
-    return output
+#     return output
 
 
 @partial_transformer

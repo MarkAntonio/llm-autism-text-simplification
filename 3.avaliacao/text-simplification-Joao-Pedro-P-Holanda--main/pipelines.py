@@ -9,11 +9,11 @@ from gloe.utils import forward
 from gloe.collection import Map
 
 from file_processing_steps import (
-    save_document_text_on_markdown_file,
-    raise_non_markdown_error,
+    # save_document_text_on_markdown_file,
+    # raise_non_markdown_error,
     read_markdown_file,
     store_results_as_csv,
-    remove_think_tags,
+    # remove_think_tags,
 )
 from metrics_steps import (
     extract_document_statistics_port_parser,
@@ -21,10 +21,10 @@ from metrics_steps import (
     transform_document_to_metric_operations,
     extract_min_nilc_metrix_ud,
 )
-from request_steps import (
-    request_simplified_text_from_chat_model,
-    generate_chunks_for_text,
-)
+# from request_steps import (
+#     request_simplified_text_from_chat_model,
+#     generate_chunks_for_text,
+# )
 from schema import ModelOptions
 from utils import set_execution_uuid, zip_to_one, pick_first, pick_second
 
@@ -38,32 +38,32 @@ def is_markdown(path: str) -> bool:
 
 uuid_context: ContextVar[UUID] = ContextVar("uuid_context")
 
-simplify_pdf_files_with_model: Transformer[
-    tuple[list[str], ModelOptions], list[Any]
-] = (
-    set_execution_uuid(uuid_context=uuid_context)
-    >> zip_to_one
-    >> (
-        Map(
-            forward[tuple[str, ModelOptions]]()
-            >> (
-                pick_first
-                >> is_markdown.Then(read_markdown_file).Else(raise_non_markdown_error),
-                pick_second,
-            )
-        )
-    )
-    >> Map(
-        generate_chunks_for_text
-        >> request_simplified_text_from_chat_model(
-            prompt_file="prompt_simplify_and_summarize_document.txt",
-        )
-        >> remove_think_tags
-        >> save_document_text_on_markdown_file(
-            doc_type="generated-simplified", execution_uuid=uuid_context
-        )
-    )
-)
+# simplify_pdf_files_with_model: Transformer[
+#     tuple[list[str], ModelOptions], list[Any]
+# ] = (
+#     set_execution_uuid(uuid_context=uuid_context)
+#     >> zip_to_one
+#     >> (
+#         Map(
+#             forward[tuple[str, ModelOptions]]()
+#             >> (
+#                 pick_first
+#                 >> is_markdown.Then(read_markdown_file).Else(raise_non_markdown_error),
+#                 pick_second,
+#             )
+#         )
+#     )
+#     >> Map(
+#         generate_chunks_for_text
+#         >> request_simplified_text_from_chat_model(
+#             prompt_file="prompt_simplify_and_summarize_document.txt",
+#         )
+#         >> remove_think_tags
+#         >> save_document_text_on_markdown_file(
+#             doc_type="generated-simplified", execution_uuid=uuid_context
+#         )
+#     )
+# )
 
 extract_udpipe_nilc_metrix_from_original_complete_texts: Transformer[
     list[str], None

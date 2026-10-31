@@ -7,9 +7,9 @@ import logging
 import pickle
 import httpx
 from utils import is_valid_word
-import settings
+# import settings
 
-_ = settings
+# _ = settings
 
 MAX_WORDS_SELECTED = 5000
 
@@ -21,7 +21,8 @@ if __name__ == "__main__":
     with httpx.stream(
         "GET",
         "https://www.linguateca.pt/acesso/tokens/formas.todos.txt",
-        verify="./linguateca-pt-chain.pem",
+        # verify="./linguateca-pt-chain.pem",
+        verify=False,
     ) as response:
         frequencies: dict[str, int] = {}
         logger.info("Storing top frequencies")

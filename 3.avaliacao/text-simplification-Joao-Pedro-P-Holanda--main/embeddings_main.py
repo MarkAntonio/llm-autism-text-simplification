@@ -4,75 +4,115 @@ from pathlib import Path
 
 import bert_score
 from dotenv import load_dotenv
-from glob import glob
 from langchain_text_splitters import SentenceTransformersTokenTextSplitter
 
 
-def read_stripped_markdown_file(path: Path) -> str:
-    with open(path, "r", encoding="utf-8") as file:
-        text = "".join(file.readlines())
+DATA_DIR = Path(os.getenv("DATA_BASE_DIR", "data"))
+ORIGINAL_DIR = DATA_DIR / "full_original_docs"
+GENERATED_DIR = DATA_DIR / "full_simplified_docs"
+OUTPUT_PATH = Path("embeddings.csv")
 
-    return text
+
+def read_text(path: Path) -> str:
+    with path.open("r", encoding="utf-8") as file:
+        return "".join(file.readlines())
 
 
-if __name__ == "__main__":
+def document_key(path: Path) -> str:
+    return path.name.split(".", maxsplit=1)[0]
+
+
+def get_original_files() -> dict[str, Path]:
+    files: dict[str, Path] = {}
+
+    for path in ORIGINAL_DIR.glob("*_stripped.md"):
+        files[document_key(path)] = path
+
+    for path in ORIGINAL_DIR.glob("*.md"):
+        if path.name.endswith("_stripped.md"):
+            continue
+        files.setdefault(document_key(path), path)
+
+    return files
+
+
+def get_generated_files() -> list[tuple[str, Path]]:
+    return [
+        (path.parent.name, path)
+        for path in GENERATED_DIR.glob("*/*_stripped.md")
+    ]
+
+
+def calc_bert_score(original_text: str, generated_text: str, splitter):
+    original_chunks = splitter.split_text(original_text)
+    generated_chunks = splitter.split_text(generated_text)
+
+    n = min(len(original_chunks), len(generated_chunks))
+    if len(original_chunks) != len(generated_chunks):
+        print(
+            f"Aviso: original tem {len(original_chunks)} chunks e gerado tem {len(generated_chunks)}; "
+            f"usando os primeiros {n}"
+        )
+
+    precision, recall, f1 = bert_score.score(
+        generated_chunks[:n],
+        original_chunks[:n],
+        lang="pt",
+    )
+
+    return {
+        "precision": precision.mean().item(),
+        "recall": recall.mean().item(),
+        "bert_score": f1.mean().item(),
+    }
+
+
+def main():
     load_dotenv()
-    ORIGINAL_DATA_DIR = os.getenv("DATA_BASE_DIR","data")
-    RESULT_DIR = os.getenv("RESULTS_BASE_DIR",'result')
 
-    original_files = {
-            Path(x).name.replace("_simplificado_stripped",""): Path(x)
-            for x in glob(f"./{ORIGINAL_DATA_DIR}/**/*simplificado_stripped.md",recursive=True)
-        }
-
-    generated_files_with_model_name = [(Path(x).parent.name ,Path(x)) for x in glob(f"./{RESULT_DIR}/**/*_stripped.md",recursive=True)]
+    if not ORIGINAL_DIR.is_dir():
+        raise FileNotFoundError(f"Diretório de originais não encontrado: {ORIGINAL_DIR}")
+    if not GENERATED_DIR.is_dir():
+        raise FileNotFoundError(f"Diretório de simplificados não encontrado: {GENERATED_DIR}")
 
     splitter = SentenceTransformersTokenTextSplitter(
         chunk_overlap=0,
-        # Modelo 
         model_name="google-bert/bert-base-multilingual-cased",
-        tokens_per_chunk=510,  # descontando 2 de 512 para os tokens especiais CLS e SEP
+        tokens_per_chunk=510,
     )
 
-    with open("embeddings.csv", "w", newline="") as csvfile:
-        fieldnames = ["name", "model", "precision", "recall", "bert_score"]
-        writer = DictWriter(csvfile, fieldnames=fieldnames)
-        # checando se o arquivo não é vazio, não funciona em arquivos xlsx
-        if os.stat("embeddings.csv").st_size == 0:
-            writer.writeheader()
+    original_files = get_original_files()
+    generated_files = sorted(get_generated_files())
 
-        for model,file in generated_files_with_model_name:
-            matching_original = original_files.get(file.name.replace("_stripped",""))
+    with OUTPUT_PATH.open("w", newline="", encoding="utf-8") as csv_file:
+        writer = DictWriter(
+            csv_file,
+            fieldnames=["name", "model", "precision", "recall", "bert_score"],
+        )
+        writer.writeheader()
 
-            if not matching_original:
-                print(f"File {file.name} don't have a corresponding simplification, skipping")
+        for model, generated_path in generated_files:
+            original_path = original_files.get(document_key(generated_path))
+            if original_path is None:
+                print(f"Ignorando {generated_path.name}: não há original correspondente")
                 continue
 
-            # Quebrando os dois textos utilizando o Tokenizer
-            original_simplification = read_stripped_markdown_file(matching_original)
-            generated_simplification = read_stripped_markdown_file(file)
-
-            original_chunks = splitter.split_text(original_simplification)
-            generated_chunks = splitter.split_text(generated_simplification)
-
-            smaller_chunk_size = min(
-                len(original_chunks), len(generated_chunks)
-            )
-
-            print(f"Calculando BERTScore para documento {file.name} com a versão do modelo {model}")
-
-            scores = bert_score.score(
-                original_chunks[:smaller_chunk_size],
-                generated_chunks[:smaller_chunk_size],
-                lang="pt",
+            scores = calc_bert_score(
+                read_text(original_path),
+                read_text(generated_path),
+                splitter,
             )
 
             writer.writerow(
                 {
-                    "name": file.name,
+                    "name": generated_path.name,
                     "model": model,
-                    "precision": scores[0].mean().item(),
-                    "recall": scores[1].mean().item(),
-                    "bert_score": scores[2].mean().item(),
+                    **scores,
                 }
             )
+
+    print(f"Resultado salvo em: {OUTPUT_PATH.resolve()}")
+
+
+if __name__ == "__main__":
+    main()
