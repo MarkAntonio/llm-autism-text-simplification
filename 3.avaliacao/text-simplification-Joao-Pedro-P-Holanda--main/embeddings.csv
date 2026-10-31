@@ -1,0 +1,2 @@
+name,llm_model,embedding_model,SentenceBERT
+original_chunks.txt,llama-3.2-3B-Instruct-guff,tardellirs/embeddinggemma-pt-br,0.8827859929629734
