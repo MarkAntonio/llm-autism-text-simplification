@@ -23,26 +23,10 @@ from utils import (
     remove_extra_whitespaces,
     remove_markdown_tables,
     strip_special_characters,
+    remove_duplicate_captions as __remove_duplicate_captions
 )
 
 logger = logging.getLogger(__name__)
-
-
-@transformer
-def remove_duplicate_captions(document: Document) -> Document:
-    """
-    Remove text from url captions in the format !?[<caption>](url)
-    that is duplicated in the text
-    """
-
-    url_captions = re.compile(r"\[(.*?)\]\(.*?\)").findall(document.text)
-    for caption in url_captions:
-        escaped_caption = re.escape(caption)
-        # using small number to avoid wrongly parsed links, such as values in
-        # the end of lines
-        if len(escaped_caption) > 10:
-            re.sub(rf"(?<!\[){escaped_caption}(?!\])", "", document.text)
-    return document
 
 
 @transformer
@@ -56,6 +40,11 @@ def transform_document_to_metric_operations(document: Document) -> Document:
     )(document.text)
 
     return document.model_copy(update={"text": new_text})
+
+@transformer
+def remove_duplicate_captions(document: Document) -> Document:
+    document.text = __remove_duplicate_captions(document.text)
+    return document
 
 
 @transformer
@@ -71,7 +60,6 @@ def extract_document_statistics_port_parser(
         return DocumentStatistics(
             id=document.id,
             name=document.name,
-            year=document.year,
             generated_with=document.generated_with,
             model="port_parser",
             max_sentence_length=conllu.max_sentence_length,
@@ -114,7 +102,6 @@ def extract_min_nilc_metrix_ud(document: Document) -> UDNilcMetrics:
     return UDNilcMetrics(
         id=document.id,
         name=document.name,
-        year=document.year,
         model="portuguese-porttinari-ud-2.15-241121",
         generated_with=document.generated_with,
         long_sentence_ratio=_long_sentence_ratio_ud(conllu),

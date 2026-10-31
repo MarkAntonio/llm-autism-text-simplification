@@ -4,29 +4,34 @@ from pydantic import BaseModel, SecretStr, computed_field
 from pathlib import Path
 import re
 
+
+
 ModelOptions = Literal[
-    # Modelos Openweb UI
-    "cow/gemma2_tools:2b",
-    "phi4:latest",
-    "phi3:latest",
-    "llama3.2:latest",
-    "gemma3:4b",
-    "qwen2.5:14b",
-    "deepseek-r1:14b",
-    "granite3-dense:2b",
-    "granite3-dense:8b",
-    "gemini-2.5-flash-preview-04-17",
-    "gemini-2.5-pro-preview-05-06",
-    # Modelos OpenRouter
-    "google/gemma-3n-e4b-it",
-    "microsoft/phi-4",
-    "meta-llama/llama-3.2-3b-instruct",
-    "qwen/qwen3-14b",
-    "ibm-granite/granite-4.0-h-micro",
-    "deepseek/deepseek-v3.2",
-    "mistralai/ministral-8b",
-    "google/gemini-2.5-flash",
-    "google/gemini-2.5-pro",
+    "gemma-4-E2B-it-qat-q4.0-gguf",
+    "llama-3.2-3B-Instruct-guff",
+    "qwen2.5-7b-instruct-q4_k_m-gguf"
+    # # Modelos Openweb UI -- MODELOS DO HOLANDA
+    # "cow/gemma2_tools:2b",
+    # "phi4:latest",
+    # "phi3:latest",
+    # "llama3.2:latest",
+    # "gemma3:4b",
+    # "qwen2.5:14b",
+    # "deepseek-r1:14b",
+    # "granite3-dense:2b",
+    # "granite3-dense:8b",
+    # "gemini-2.5-flash-preview-04-17",
+    # "gemini-2.5-pro-preview-05-06",
+    # # Modelos OpenRouter
+    # "google/gemma-3n-e4b-it",
+    # "microsoft/phi-4",
+    # "meta-llama/llama-3.2-3b-instruct",
+    # "qwen/qwen3-14b",
+    # "ibm-granite/granite-4.0-h-micro",
+    # "deepseek/deepseek-v3.2",
+    # "mistralai/ministral-8b",
+    # "google/gemini-2.5-flash",
+    # "google/gemini-2.5-pro",
 ]
 
 DocumentType = Literal[
@@ -67,30 +72,28 @@ class Document(BaseModel):
 
     @computed_field
     @property
-    def id(self) -> int:
+    def id(self) -> int | None:
+        prefix_id = re.match(r"^(\d+)\.", self.name)
+        if prefix_id:
+            return int(prefix_id.group(1))
+
         splits = self.name.split("_")
 
         for i in splits[::-1]:
             try:
                 return int(i)
-            except:
+            except ValueError:
                 pass
 
-    @computed_field
-    @property
-    def year(self) -> int:
-        splits = self.name.split("_")
-
-        return int(splits[0])
+        return None
 
     def __repr__(self):
         return f"{self.name} ({self.path}"
 
 
 class DocumentResultModel(BaseModel):
-    id: int
+    id: int | None
     name: str
-    year: int
     model: str | None = None
     generated_with: ModelOptions | None
 

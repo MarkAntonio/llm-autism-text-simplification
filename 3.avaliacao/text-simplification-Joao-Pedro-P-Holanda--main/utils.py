@@ -111,3 +111,62 @@ def intersperse(value: T, sequence: Iterable[T]):
         if i != 0:
             yield value
         yield item
+
+
+
+@transformer
+def change_links_to_alt_texts(text: str) -> str:
+    """
+    Change links in the format [alt](url) to be only "alt"
+    """
+    return re.sub(r'\[([^\]]*)\]\([^\)]*\)', r'\1', text)
+
+@transformer
+def remove_html_tags(text: str) -> str:
+    """
+    Removes tags in the format "<tag>inner</tag>" to be only "inner"
+    """
+    return re.sub(r'<[^>]+>', '', text)
+
+@transformer
+def remove_image_references(text: str) -> str:
+    """
+    Removes references in the format "![alt](url)"
+    """
+    return re.sub(r'!\[([^\]]*)\]\([^\)]*\)', '', text)
+
+
+@transformer
+def remove_duplicate_captions(text: str) -> str:
+    """
+    Remove text from url captions in the format !?[<caption>](url)
+    that is duplicated in the text
+    """
+
+    url_captions = re.compile(r"\[(.*?)\]\(.*?\)").findall(text)
+    for caption in url_captions:
+        escaped_caption = re.escape(caption)
+        # using small number to avoid wrongly parsed links, such as values in
+        # the end of lines
+        if len(escaped_caption) > 10:
+            re.sub(rf"(?<!\[){escaped_caption}(?!\])", "", text)
+    return text
+
+
+@transformer
+def strip_document_markdown_formatting(text: str) -> str:
+    new_text = (
+        remove_markdown_tables
+        >> strip_special_characters
+        >> remove_duplicate_captions
+        # removendo imagens antes de converter links para evitar sobreposição
+        # das mudanças
+        # >> remove_image_references
+        # >> change_links_to_alt_texts
+        >> remove_html_tags
+        >> remove_extra_whitespaces
+        >> remove_enumerations
+        >> remove_extra_whitespaces
+    )(text)
+
+    return new_text
