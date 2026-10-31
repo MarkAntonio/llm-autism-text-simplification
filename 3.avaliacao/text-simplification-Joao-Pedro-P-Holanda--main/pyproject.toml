@@ -1,0 +1,41 @@
+[project]
+name = "text-simplification-api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "gloe>=0.7.0",
+    "httpx>=0.28.1",
+    "pymupdf>=1.25.5",
+    "pymupdf4llm>=0.0.22",
+    "python-dotenv>=1.1.0",
+    "python-multipart>=0.0.20",
+    "ipykernel>=6.29.5",
+    "pandas>=2.2.3",
+    "matplotlib>=3.10.3",
+    "langchain-google-genai>=2.1.4",
+    "langchain-ollama>=0.3.2",
+    "sentence-transformers>=4.1.0",
+    "einops>=0.8.1",
+    "bert-score>=0.3.13",
+    "md2pdf>=1.0.1",
+    "beautifulsoup4>=4.13.4",
+    "torch>=2.7.0",
+    "notebook>=7.4.2",
+    "jupyterlab>=4.4.2",
+    "nomic>=3.5.3",
+    "deepeval>=3.7.2",
+    "openai==2.8.1",
+    "langchain-openai>=1.1.7",
+    "langchain-text-splitters>=1.1.0",
+    "langgraph>=1.0.5",
+    "langchain>=1.2.3",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.9.0",
+    "seaborn>=0.13.2",
+]
+
