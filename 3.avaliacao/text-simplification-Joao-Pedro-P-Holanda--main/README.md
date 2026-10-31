@@ -21,5 +21,6 @@ e a tokenização para o formato Conllu foi feita com o [portTokenizer](https://
 O script utilizado para executar o PortParser pelo Google Colab está disponível 
 [neste link](https://colab.research.google.com/drive/1HoyrhzemKY2rfKWEYISUgme_tIPlIgJ2?usp=sharing)
 
+Para instruções de uso do script local `execute_tcc_marco.py`, incluindo a organização dos arquivos `.md` e `.conllu`, consulte o [guia de execução](./GUIA_EXECUTE_TCC_MARCO.md).
 
 
